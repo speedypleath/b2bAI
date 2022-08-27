@@ -13,7 +13,7 @@ build:
 	make config
 	cmake --build ./${build} --config Debug --target b2bAI_Standalone -j 6 --
 
-build-plugin:
+build-lib:
 	cmake --build ./${build} --config Debug --target midi_generator_ext -j 6 --
 
 clean:

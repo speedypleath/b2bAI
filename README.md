@@ -53,9 +53,14 @@ sudo ./b2 install
 make all
 ```
 
-### Configure plugin
+### Configure
 ```
 make config
+```
+
+### Build library
+```
+make build-lib
 ```
 
 ### Build
