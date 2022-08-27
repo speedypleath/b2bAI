@@ -1,11 +1,3 @@
-[submodule "JUCE"]
-	path = lib/JUCE
-	url = https://github.com/speedypleath/JUCE
-
-[submodule "foleys_gui_magic"]
-	path = lib/foleys_gui_magic
-	url = https://github.com/speedypleath/foleys_gui_magic
-
 [submodule "midi_generator"]
 	path = midi_generator
 	url = https://github.com/speedypleath/midi_generator
@@ -13,3 +5,11 @@
 [submodule "b2bAI-VST"]
 	path = vst
 	url = https://github.com/speedypleath/b2bAI-VST
+
+[submodule "lib/JUCE"]
+	path = lib/JUCE
+	url = https://github.com/speedypleath/JUCE.git
+	
+[submodule "lib/foleys_gui_magic"]
+	path = lib/foleys_gui_magic
+	url = https://github.com/speedypleath/foleys_gui_magic.git
