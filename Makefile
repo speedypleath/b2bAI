@@ -15,6 +15,7 @@ clean:
 	find . -type d -name '__pycache__' -exec rm -rf "{}" \;
 	
 test:
+	cd lib;  cmake --build ../build --config Debug --target MidiGenerator -j 6 --
 	cd tests; cmake --build ../build --config Debug --target test_executable -j 6 --
 	cd build; ctest --rerun-failed --output-on-failure
 	pytest

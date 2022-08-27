@@ -11,7 +11,7 @@ message(STATUS "Python3: " ${Python3_INCLUDE_DIRS})
 
 
 # Find boost
-find_package(Boost 1.79.0 REQUIRED COMPONENTS log python unit_test_framework filesystem)
+find_package(Boost 1.79.0 REQUIRED COMPONENTS log python310 unit_test_framework filesystem)
 add_definitions(${Boost_DEFINITIONS})
 
 message(STATUS "Boost: " ${Boost_INCLUDE_DIR})
@@ -61,8 +61,4 @@ add_subdirectory(vst)
 
 
 # Tests
-add_executable(test_executable tests/test.cpp)
-target_include_directories(test_executable PRIVATE ${Boost_INCLUDE_DIRS})
-target_compile_definitions(test_executable PRIVATE "BOOST_TEST_DYN_LINK=1")
-target_link_libraries(test_executable ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
-add_test(NAME test1 COMMAND test_executable)
+add_subdirectory(tests)

@@ -1,11 +1,10 @@
 #pragma once
-
 #include <iostream>
 
 namespace midi_generator
 {
 struct Note {
-    Note(int p, int v, double s, double e) : pitch(p), velocity(v), start(s), end(e) {}
+    Note(int p=0, int v=0, double s=.0f, double e=.0f) : pitch(p), velocity(v), start(s), end(e) {}
     int pitch;
     int velocity;
     double start;
@@ -20,5 +19,12 @@ struct Note {
     bool operator!=(const Note &rhs) const {
         return !(rhs == *this);
     }
+
+    friend std::ostream& operator<<(std::ostream& os, const Note& note);
 };
+
+std::ostream& operator<<(std::ostream& os, const Note& note) {
+    os << "Note(" << note.pitch << ", " << note.velocity << ", " << note.start << ", " << note.end << ")" << std::endl;
+    return os;
+}
 }

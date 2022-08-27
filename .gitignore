@@ -15,3 +15,5 @@ vst/CMakeFiles/
 .pytest_cache/
 
 lib/midi_generator/Makefile
+
+Testing/
