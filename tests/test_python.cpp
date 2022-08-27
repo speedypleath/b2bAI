@@ -1,16 +1,13 @@
-#define BOOST_TEST_MODULE test_python
-
-#include <boost/test/included/unit_test.hpp>
-#include <boost/test/included/unit_test.hpp>
-#include <boost/test/data/test_case.hpp>
-#include <boost/test/data/monomorphic.hpp>
 #include <python3.10/Python.h>
 #include <boost/python.hpp>
 #include <string>
+#include <boost/test/included/unit_test.hpp>
+#include <../lib/midi_generator/note.h>
 
+using namespace boost::unit_test;
 using namespace boost::python;
 
-BOOST_AUTO_TEST_CASE(hello_world) {
+void test_hello_world() {
     Py_Initialize();
     object main_module = import("__main__");
     object main_namespace = main_module.attr("__dict__");
@@ -24,8 +21,27 @@ BOOST_AUTO_TEST_CASE(hello_world) {
     BOOST_TEST(message == std::string("Hello from Python!"), boost::test_tools::per_element());
 }
 
-BOOST_AUTO_TEST_CASE(import_module) {
+void test_import_module() {
     object midi_generator = import("midi_generator.cli");
     object main_namespace = midi_generator.attr("__dict__");
     BOOST_TEST(midi_generator.is_none() == false);
+}
+
+void test_import_module_and_call_function() {
+    object midi_generator = import("midi_generator.cli");
+    object main_namespace = midi_generator.attr("__dict__");
+    object print_cli = main_namespace["print_cli"];
+    print_cli();
+    BOOST_TEST(true);
+}
+
+test_suite* init_unit_test_suite( int /*argc*/, char* /*argv*/[] )
+{
+    framework::master_test_suite().
+        add(BOOST_TEST_CASE_NAME(&test_hello_world, "hello world"));
+    framework::master_test_suite().
+        add(BOOST_TEST_CASE_NAME(&test_import_module, "import module"));
+    framework::master_test_suite().
+        add(BOOST_TEST_CASE_NAME(&test_import_module_and_call_function, "call function in module"));
+  return 0;
 }

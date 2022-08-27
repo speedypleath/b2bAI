@@ -1,14 +1,12 @@
-add_library(MidiGenerator build.cpp)
+add_library(midi_generator_ext SHARED build.cpp note.cpp note.h)
 
-set_target_properties(MidiGenerator PROPERTIES PREFIX "")
+set_target_properties(midi_generator_ext PROPERTIES PREFIX "")
 
 message(STATUS "Boost include: " ${Boost_INCLUDE_DIR})
 
-target_link_libraries(MidiGenerator LINK_PUBLIC
+target_link_libraries(midi_generator_ext LINK_PUBLIC
         ${Boost_LIBRARIES} ${Python3_LIBRARIES})
 
-
-
-install(TARGETS MidiGenerator DESTINATION lib)
+install(TARGETS midi_generator_ext DESTINATION lib)
 install(FILES note.h DESTINATION include)
 

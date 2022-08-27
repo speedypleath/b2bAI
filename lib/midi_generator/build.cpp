@@ -2,6 +2,7 @@
 #include "note.h"
 using namespace boost::python;
 
+
 static void* convertible(PyObject* obj) {
     if (!PyTuple_Check(obj)) {
         return 0;

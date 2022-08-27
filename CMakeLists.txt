@@ -21,13 +21,12 @@ message(STATUS "Boost: " ${Boost_INCLUDE_DIR})
 add_subdirectory(lib/midi_generator)
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 
-message(STATUS "Extra libs: " MidiGenerator)
-
-
 # Build python package
 if(NOT IS_DIRECTORY ${CMAKE_BINARY_DIR}/midi_generator)
     file(COPY midi_generator DESTINATION ${CMAKE_BINARY_DIR} PATTERN ".github" EXCLUDE)
     file(COPY scripts/build.sh DESTINATION ${CMAKE_BINARY_DIR}/scripts)
+    file(COPY scripts/create_note.py DESTINATION ${CMAKE_BINARY_DIR}/scripts)
+
     find_program(BASH bash)
 
     exec_program(${BASH} ${CMAKE_BINARY_DIR}/scripts ARGS "build.sh" RETURN_VALUE PACKAGE_NOT_BUILT)
