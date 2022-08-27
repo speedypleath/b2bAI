@@ -1,4 +1,4 @@
-# Build
+# Dependencies
 
 Tested on Debian 11 ARM
 
@@ -45,4 +45,30 @@ cd boost_1_79_0
 ./bootstrap.sh --prefix=/usr/~ --with-toolset=clang --with-python-version=3.10
 ./b2
 sudo ./b2 install
+```
+
+# Build
+## CMake targets
+```
+make all
+```
+
+### Configure plugin
+```
+make config
+```
+
+### Build
+```
+make build
+```
+
+### Test
+```
+make test
+```
+
+### Clean
+```
+make clean
 ```
