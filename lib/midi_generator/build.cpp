@@ -26,9 +26,9 @@ static void* convertible(PyObject* obj) {
 }
 
 static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
-    void* storage = ((converter::rvalue_from_python_storage<midigenerator::Note>*)data)->storage.bytes;
+    void* storage = ((converter::rvalue_from_python_storage<midi_generator::Note>*)data)->storage.bytes;
 
-    new (storage) midigenerator::Note(
+    new (storage) midi_generator::Note(
         PyLong_AsLong(PyTuple_GetItem(obj, 0)),
         PyLong_AsLong(PyTuple_GetItem(obj, 1)),
         PyFloat_AsDouble(PyTuple_GetItem(obj, 2)),
@@ -40,11 +40,11 @@ static void construct(PyObject* obj, boost::python::converter::rvalue_from_pytho
 
 BOOST_PYTHON_MODULE(note)
 {
-    converter::registry::push_back(&convertible, &construct, type_id<midigenerator::Note>());
+    converter::registry::push_back(&convertible, &construct, type_id<midi_generator::Note>());
 
-    class_<midigenerator::Note>("Note", init<int, int, double, double>())
-        .add_property("pitch", &midigenerator::Note::pitch)
-        .add_property("velocity", &midigenerator::Note::velocity)
-        .add_property("start", &midigenerator::Note::start)
-        .add_property("end", &midigenerator::Note::end);
+    class_<midi_generator::Note>("Note", init<int, int, double, double>())
+        .add_property("pitch", &midi_generator::Note::pitch)
+        .add_property("velocity", &midi_generator::Note::velocity)
+        .add_property("start", &midi_generator::Note::start)
+        .add_property("end", &midi_generator::Note::end);
 }

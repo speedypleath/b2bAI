@@ -1,7 +1,6 @@
 build/
 .vscode/
 
-Makefile
 cmake_install.cmake
 CMakeCache.txt
 
@@ -10,3 +9,9 @@ tests/__pycache__/
 *.so
 
 CMakeFiles/
+
+vst/CMakeFiles/
+vst/CMakeFiles/
+.pytest_cache/
+
+lib/midi_generator/Makefile

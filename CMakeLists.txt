@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.23)
 
 project(b2bAI VERSION 1.0)
+enable_testing()
 
 # Find python
 set(Python3_ADDITIONAL_VERSIONS 3.10.6)
@@ -10,7 +11,7 @@ message(STATUS "Python3: " ${Python3_INCLUDE_DIRS})
 
 
 # Find boost
-find_package(Boost 1.79.0 REQUIRED COMPONENTS log python)
+find_package(Boost 1.79.0 REQUIRED COMPONENTS log python unit_test_framework filesystem)
 add_definitions(${Boost_DEFINITIONS})
 
 message(STATUS "Boost: " ${Boost_INCLUDE_DIR})
@@ -24,15 +25,18 @@ message(STATUS "Extra libs: " MidiGenerator)
 
 
 # Build python package
-file(COPY midi_generator DESTINATION ${CMAKE_BINARY_DIR} PATTERN ".github" EXCLUDE)
-file(COPY scripts DESTINATION ${CMAKE_BINARY_DIR})
-find_program(BASH bash)
+if(NOT IS_DIRECTORY ${CMAKE_BINARY_DIR}/midi_generator)
+    file(COPY midi_generator DESTINATION ${CMAKE_BINARY_DIR} PATTERN ".github" EXCLUDE)
+    file(COPY scripts/build.sh DESTINATION ${CMAKE_BINARY_DIR}/scripts)
+    find_program(BASH bash)
 
-exec_program(${BASH} ${CMAKE_BINARY_DIR}/scripts ARGS "build.sh" RETURN_VALUE PACKAGE_NOT_BUILT)
+    exec_program(${BASH} ${CMAKE_BINARY_DIR}/scripts ARGS "build.sh" RETURN_VALUE PACKAGE_NOT_BUILT)
 
-if(PACKAGE_NOT_BUILT)
-    message(FATAL_ERROR "Couldn't build package")
+    if(PACKAGE_NOT_BUILT)
+        message(FATAL_ERROR "Couldn't build package")
+    endif()
 endif()
+
 
 #JUCE
 add_subdirectory(lib/JUCE EXCLUDE_FROM_ALL)
@@ -44,13 +48,21 @@ set_property(GLOBAL PROPERTY JUCE_COPY_PLUGIN_AFTER_BUILD TRUE)
 option(JUCE_ENABLE_MODULE_SOURCE_GROUPS "Enable Module Source Groups" ON)
 set_property(GLOBAL PROPERTY USE_FOLDERS YES)
 
+
 # Company settings
 set_directory_properties(PROPERTIES JUCE_COMPANY_COPYRIGHT "GNU GENERAL PUBLIC LICENSE Version 3")
 set_directory_properties(PROPERTIES JUCE_COMPANY_NAME "brahman")
 set_directory_properties(PROPERTIES JUCE_COMPANY_WEBSITE "https://github.com/speedypleath/b2bAI-VST")
 set_directory_properties(PROPERTIES JUCE_COMPANY_EMAIL "gheorgheandrei13@gmail.com")
 
+
 # Plugin
 add_subdirectory(vst)
 
-install(TARGETS ${PROJECT_NAME} DESTINATION bin)
+
+# Tests
+add_executable(test_executable tests/test.cpp)
+target_include_directories(test_executable PRIVATE ${Boost_INCLUDE_DIRS})
+target_compile_definitions(test_executable PRIVATE "BOOST_TEST_DYN_LINK=1")
+target_link_libraries(test_executable ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+add_test(NAME test1 COMMAND test_executable)
