@@ -2,6 +2,12 @@
 #include "note.h"
 using namespace boost::python;
 
+template<typename T>
+void list_assign(std::list<T>& l, object o) {
+    // Turn a Python sequence into an STL input range
+    stl_input_iterator<T> begin(o), end;
+    l.assign(begin, end);
+}
 
 static void* convertible(PyObject* obj) {
     if (!PyTuple_Check(obj)) {

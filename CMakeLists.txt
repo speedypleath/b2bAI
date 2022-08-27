@@ -18,8 +18,10 @@ message(STATUS "Boost: " ${Boost_INCLUDE_DIR})
 
 
 # Build shared library
-add_subdirectory(lib/midi_generator)
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+add_subdirectory(lib/midi_generator)
+
+message(STATUS "Midi generator: " ${CMAKE_CURRENT_BINARY_DIR}/vst/midi_generator/midi_generator.cpp)
 
 # Build python package
 if(NOT IS_DIRECTORY ${CMAKE_BINARY_DIR}/midi_generator)
@@ -47,13 +49,11 @@ set_property(GLOBAL PROPERTY JUCE_COPY_PLUGIN_AFTER_BUILD TRUE)
 option(JUCE_ENABLE_MODULE_SOURCE_GROUPS "Enable Module Source Groups" ON)
 set_property(GLOBAL PROPERTY USE_FOLDERS YES)
 
-
 # Company settings
 set_directory_properties(PROPERTIES JUCE_COMPANY_COPYRIGHT "GNU GENERAL PUBLIC LICENSE Version 3")
 set_directory_properties(PROPERTIES JUCE_COMPANY_NAME "brahman")
 set_directory_properties(PROPERTIES JUCE_COMPANY_WEBSITE "https://github.com/speedypleath/b2bAI-VST")
 set_directory_properties(PROPERTIES JUCE_COMPANY_EMAIL "gheorgheandrei13@gmail.com")
-
 
 # Plugin
 add_subdirectory(vst)
