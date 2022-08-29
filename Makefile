@@ -4,7 +4,7 @@ clion-build = cmake-build-debug
 vscode_build = build
 build = $(vscode_build)
 
-all: | config build-plugin build test run
+all: | config build-lib build test run
 
 config:
 	cmake -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Debug -DCMAKE_C_COMPILER:FILEPATH=/usr/bin/clang -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/clang++ -S./ -B./${build} -G "Unix Makefiles"
@@ -15,6 +15,10 @@ build:
 
 build-lib:
 	cmake --build ./${build} --config Debug --target midi_generator_ext -j 6 --
+
+build-module:
+	cd midi_generator; python3 -m build| pip3 install --force-reinstall dist/*.whl
+
 
 clean:
 	rm -rf ./${build}

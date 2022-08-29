@@ -1,5 +1,3 @@
-#include <python3.10/Python.h>
-#include <boost/python.hpp>
 #include "API.h"
 
 using namespace boost::python;
@@ -16,16 +14,16 @@ std::list<mg::Note> mg::generate() {
     object main_module = import("midi_generator.cli.commands");
     object main_namespace = main_module.attr("__dict__");
     object generate = main_namespace["generate"];
-    std::list<midi_generator::Note> vec;
+    std::list<midi_generator::Note> lst;
     try {
         object result = generate();
         list notes = extract<list>(result);
-        vec = to_std_list<midi_generator::Note>(notes);
+        lst = to_std_list<midi_generator::Note>(notes);
     } catch (error_already_set) {
         PyErr_Print();
         return std::list<mg::Note>();
     }
-    return vec;
+    return lst;
 }
 
 std::list<mg::Note> mg::mutate() {
@@ -37,6 +35,12 @@ std::list<mg::Note> continue_sequence() {
     std::list<mg::Note> notes;
     return notes;
 }
+
+std::list<mg::Note> combine() {
+    std::list<mg::Note> notes;
+    return notes;
+}
+
 void mg::save_file(std::string filename, std::list<mg::Note> notes) {
     return;
 }
