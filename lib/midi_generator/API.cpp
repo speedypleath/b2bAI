@@ -1,46 +1,1 @@
-#include "API.h"
-
-using namespace boost::python;
-namespace mg = midi_generator;
-
-template<typename T>
-std::list<T> mg::to_std_list(const object& iterable) {
-    return std::list<T>( stl_input_iterator<T>(iterable),
-                             stl_input_iterator<T>( ) );
-}
-
-std::list<mg::Note> mg::generate() {
-    Py_Initialize();
-    object main_module = import("midi_generator.cli.commands");
-    object main_namespace = main_module.attr("__dict__");
-    object generate = main_namespace["generate"];
-    std::list<midi_generator::Note> lst;
-    try {
-        object result = generate();
-        list notes = extract<list>(result);
-        lst = to_std_list<midi_generator::Note>(notes);
-    } catch (error_already_set) {
-        PyErr_Print();
-        return std::list<mg::Note>();
-    }
-    return lst;
-}
-
-std::list<mg::Note> mg::mutate() {
-    std::list<mg::Note> notes;
-    return notes;
-}
-
-std::list<mg::Note> continue_sequence() {
-    std::list<mg::Note> notes;
-    return notes;
-}
-
-std::list<mg::Note> combine() {
-    std::list<mg::Note> notes;
-    return notes;
-}
-
-void mg::save_file(std::string filename, std::list<mg::Note> notes) {
-    return;
-}
+#include "API.h"using namespace boost::python;namespace mg = midi_generator;template<typename T>std::list<T> mg::to_std_list(const object& iterable) {    return std::list<T>( stl_input_iterator<T>(iterable),                             stl_input_iterator<T>( ) );}template<typename T>list to_python_list(std::list<T> std_list) {    typename std::list<T>::iterator iter;    list python_list;    for (iter = std_list.begin(); iter != std_list.end(); ++iter) {        python_list.append(*iter);    }    return python_list;}std::list<mg::Note> mg::generate() {    Py_Initialize();    object main_module = import("midi_generator.cli.commands");    object main_namespace = main_module.attr("__dict__");    object generate = main_namespace["generate"];    std::list<midi_generator::Note> lst;    try {        object result = generate();        list notes = extract<list>(result);        lst = to_std_list<midi_generator::Note>(notes);    } catch (error_already_set) {        PyErr_Print();        return std::list<mg::Note>();    }    return lst;}std::list<mg::Note> mg::mutate(std::list<mg::Note> notes) {    Py_Initialize();    object main_module = import("midi_generator.cli.commands");    object main_namespace = main_module.attr("__dict__");    object mutate = main_namespace["mutate"];    std::list<midi_generator::Note> lst;    try {        list python_notes = to_python_list(notes);        lst = to_std_list<midi_generator::Note>(python_notes);        object result = mutate(python_notes);        list mutated_notes = extract<list>(result);        lst = to_std_list<midi_generator::Note>(mutated_notes);    } catch (error_already_set) {        PyErr_Print();        return std::list<mg::Note>();    }    return lst;}std::list<mg::Note> continue_sequence() {    std::list<mg::Note> notes;    return notes;}std::list<mg::Note> combine() {    std::list<mg::Note> notes;    return notes;}void mg::save_file(std::string filename, std::list<mg::Note> notes) {    return;}

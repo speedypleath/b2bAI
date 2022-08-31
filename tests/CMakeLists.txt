@@ -1,7 +1,5 @@
 find_library(NOTE_LIB midi_generator_ext.so PATHS ${CMAKE_BINARY_DIR}/lib/midi_generator/)
 if(NOTE_LIB)
-    find_package (Python3 COMPONENTS Interpreter Development)
-
     add_executable(test_python test_python.cpp)
     target_include_directories(test_python PRIVATE ${Boost_INCLUDE_DIR})
     target_include_directories(test_python PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -22,4 +20,6 @@ if(NOTE_LIB)
     target_compile_definitions(test_api PRIVATE "BOOST_TEST_DYN_LINK=1")
     target_link_libraries(test_api ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Python3_LIBRARIES} Boost::python310 ${NOTE_LIB})
     add_test(NAME test_api_creation COMMAND test_api)
+
+    add_test(NAME tests COMMAND test_api test_python test_extract)
 endif()
