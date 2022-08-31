@@ -1,12 +1,7 @@
-add_library(midi_generator_ext SHARED build.cpp note.cpp API.cpp)
+cmake_minimum_required(VERSION 3.23)
+project(pybind_midi)
 
-set_target_properties(midi_generator_ext PROPERTIES PREFIX "")
-
-message(STATUS "Boost include: " ${Boost_INCLUDE_DIR})
-
-target_link_libraries(midi_generator_ext LINK_PUBLIC
-        ${Boost_LIBRARIES} ${Python3_LIBRARIES})
-
-install(TARGETS midi_generator_ext DESTINATION vst)
-install(FILES note.h API.H  DESTINATION vst)
-
+add_subdirectory(pybind11)
+add_library(note SHARED pybind.cpp API.cpp)
+target_include_directories(note PRIVATE ${Boost_INCLUDE_DIR})
+target_link_libraries(note ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_LIBRARIES} pybind11::module pybind11::embed pybind11::lto)

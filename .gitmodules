@@ -13,3 +13,11 @@
 [submodule "lib/foleys_gui_magic"]
 	path = lib/foleys_gui_magic
 	url = https://github.com/speedypleath/foleys_gui_magic.git
+[submodule "lib/pybind11"]
+	path = lib/pybind11
+	url = ../../pybind/pybind11
+	branch = stable
+[submodule "lib/midi_generator/pybind11"]
+	path = lib/midi_generator/pybind11
+	url = ../../pybind/pybind11
+	branch = stable

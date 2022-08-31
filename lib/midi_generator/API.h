@@ -1,8 +1,7 @@
 #pragma once
 #include "note.h"
-#include <python3.10/Python.h>
-#include <boost/python.hpp>
 #include <list>
+#include <pybind11/pybind11.h>
 
 namespace midi_generator
 {
@@ -11,7 +10,4 @@ namespace midi_generator
     std::list<Note> continue_sequence();
     std::list<Note> combine();
     void save_file(std::string filename, std::list<Note> notes);
-     
-    template<typename T>
-    std::list<T> to_std_list(const boost::python::object& iterable);
 }
