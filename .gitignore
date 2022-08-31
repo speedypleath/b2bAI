@@ -11,10 +11,10 @@ tests/__pycache__/
 CMakeFiles/
 
 vst/CMakeFiles/
-vst/CMakeFiles/
 .pytest_cache/
 
 lib/midi_generator/Makefile
 
 Testing/
 .idea/
+debug/
