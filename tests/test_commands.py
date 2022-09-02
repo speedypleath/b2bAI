@@ -1,12 +1,11 @@
-from midi_generator.cli.commands import generate, mutate, melody_to_individual, check_remaining_ticks
+from midi_generator.commands import generate, mutate, continue_sequence, combine
 from midi_generator.config import Configuration
-from midi_generator.genetic import create_config, individual_to_melody
 
 
 def test_generate():
     notes = generate(Configuration())
-    print(notes)
-    assert (notes is not None)
+
+    assert (len(notes) > 0)
 
 
 def test_mutate():
@@ -15,3 +14,19 @@ def test_mutate():
     mutant = mutate(notes)
 
     assert (len(mutant) > 0)
+
+
+def test_continue():
+    config = Configuration()
+    notes = generate(config)
+    continued = continue_sequence(notes, config)
+
+    assert (len(continued) > 0)
+
+
+def test_combine():
+    config = Configuration()
+    notes = [generate(config) for _ in range(4)]
+    combined = combine(notes, config)
+
+    assert (len(combined) > 0)

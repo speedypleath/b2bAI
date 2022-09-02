@@ -1,5 +1,5 @@
-from ctypes import CDLL
 import note
+
 
 def test_note_structure_exists():
     assert("Note" in dir(note))

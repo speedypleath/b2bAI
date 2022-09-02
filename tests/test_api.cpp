@@ -18,8 +18,16 @@ void test_mutate() {
 }
 
 void test_continue() {
+    auto notes = midi_generator::generate();
+}
 
-};
+void test_combine() {
+
+}
+
+void test_write() {
+
+}
 
 test_suite* init_unit_test_suite( int /*argc*/, char* /*argv*/[] )
 {
