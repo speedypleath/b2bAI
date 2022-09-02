@@ -1,5 +1,5 @@
 #include <boost/test/included/unit_test.hpp>
-#include "../lib/midi_generator/API.h"
+#include "API.h"
 #include "pybind11/embed.h"
 
 using namespace boost::unit_test;

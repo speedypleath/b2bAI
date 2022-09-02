@@ -1,7 +1,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/embed.h>
 #include <boost/test/included/unit_test.hpp>
-#include "../lib/midi_generator/note.h"
+#include "note.h"
 
 namespace py = pybind11;
 using namespace boost::unit_test;

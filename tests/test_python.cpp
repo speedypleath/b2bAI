@@ -9,39 +9,38 @@ using namespace boost::unit_test;
 using namespace py::literals;
 
 void test_hello_world() {
-    pybind11::scoped_interpreter guard{};
+    try {
+        pybind11::initialize_interpreter();
 
-    auto locals = py::dict("name"_a="World");
-    py::exec(R"(
+        auto locals = py::dict("name"_a = "World");
+        py::exec(R"(
         message = "Hello, {name}!".format(**locals())
     )", py::globals(), locals);
 
-    auto message = locals["message"].cast<std::string>();
+        auto message = locals["message"].cast<std::string>();
 
-    BOOST_ASSERT(message == "Hello, World!");
-}
-
-void test_import_module() {
-    try {
-        pybind11::scoped_interpreter guard{};
-
-        py::module_ sys = py::module_::import("midi_generator");
-
-        BOOST_ASSERT(true);
-    }
-    catch (pybind11::error_already_set& error) {
+        BOOST_ASSERT(message == "Hello, World!");
+    } catch (pybind11::error_already_set& error) {
         std::cout << error.what();
 
         BOOST_ASSERT(false);
     }
 }
 
+void test_import_module() {
+    try {
+        py::module_ sys = py::module_::import("midi_generator");
+        BOOST_ASSERT(true);
+    } catch (pybind11::error_already_set& error) {
+        std::cout << error.what();
+        BOOST_ASSERT(false);
+    }
+}
+
 void test_import_module_and_call_function() {
     try {
-        pybind11::scoped_interpreter guard{};
-
         py::module_ mg = py::module_::import("midi_generator.cli");
-        
+
         mg.attr("print_cli")();
         BOOST_ASSERT(true);
     } catch (py::error_already_set &error) {
@@ -58,5 +57,5 @@ test_suite* init_unit_test_suite( int /*argc*/, char* /*argv*/[] )
         add(BOOST_TEST_CASE_NAME(&test_import_module, "import module"));
     framework::master_test_suite().
         add(BOOST_TEST_CASE_NAME(&test_import_module_and_call_function, "call function in module"));
-  return 0;
+  return nullptr;
 }

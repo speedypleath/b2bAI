@@ -7,11 +7,10 @@ build = $(vscode_build)
 all: | config build-lib build test run
 
 config:
-	cmake -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Debug -DCMAKE_C_COMPILER:FILEPATH=/usr/bin/clang -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/clang++ -S./ -B./${build} -G "Unix Makefiles"
+	cmake -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Debug -DCMAKE_C_COMPILER:FILEPATH=/usr/bin/clang -DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/clang++ -S./ -B./${build} -G "Ninja"
 
 build:
-	make config
-	cmake --build ./${build} --config Debug --target b2bAI_Standalone -j 6 --
+	make config | cmake --build ./${build} --config Debug --target b2bAI_Standalone -j 6 --
 
 build-lib:
 	cmake --build ./${build} --config Debug --target midi_generator_ext -j 6 --

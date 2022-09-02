@@ -9,6 +9,7 @@ enable_testing()
 # Find python
 set(Python3_ROOT_DIR /opt/homebrew/Cellar/python@3.10/3.10.6_1)
 set(Python3_ADDITIONAL_VERSIONS 3.10.6)
+set(Python3_FIND_FRAMEWORK "FIRST")
 find_package (Python3 COMPONENTS Interpreter Development)
 
 message(STATUS "Python3: " ${Python3_INCLUDE_DIRS})
@@ -26,7 +27,7 @@ add_subdirectory(midi_generator)
 
 
 # Build python package
-file(COPY midi_generator DESTINATION ${CMAKE_BINARY_DIR} PATTERN ".github" EXCLUDE)
+file(COPY midi_generator DESTINATION ${CMAKE_BINARY_DIR} PATTERN ".github .idea dist build" EXCLUDE)
 file(COPY scripts/build.sh DESTINATION ${CMAKE_BINARY_DIR}/scripts)
 
 find_program(BASH bash)
