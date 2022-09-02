@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.23)
 
 project(b2bAI VERSION 1.0)
-set(CMAKE_CXX_STANDARD 14 CACHE STRING "C++ version selection")  # or 11, 14, 17, 20
+set(CMAKE_CXX_STANDARD 11 CACHE STRING "C++ version selection")  # or 11, 14, 17, 20
 set(CMAKE_CXX_STANDARD_REQUIRED ON)  # optional, ensure standard is supported
 set(CMAKE_CXX_EXTENSIONS OFF)  # optional, keep compiler extensions off
 enable_testing()
@@ -22,26 +22,19 @@ message(STATUS "Boost: " ${Boost_INCLUDE_DIR})
 
 
 # Build shared library
-set(CMAKE_SHARED_LIBRARY_PREFIX "")
-option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+add_subdirectory(midi_generator)
 
-add_subdirectory(lib/midi_generator)
-
-message(STATUS "Midi generator: " ${CMAKE_CURRENT_BINARY_DIR}/vst/midi_generator/midi_generator.cpp)
 
 # Build python package
-if(NOT IS_DIRECTORY ${CMAKE_BINARY_DIR}/midi_generator)
-    file(COPY midi_generator DESTINATION ${CMAKE_BINARY_DIR} PATTERN ".github" EXCLUDE)
-    file(COPY scripts/build.sh DESTINATION ${CMAKE_BINARY_DIR}/scripts)
-    file(COPY scripts/create_note.py DESTINATION ${CMAKE_BINARY_DIR}/scripts)
+file(COPY midi_generator DESTINATION ${CMAKE_BINARY_DIR} PATTERN ".github" EXCLUDE)
+file(COPY scripts/build.sh DESTINATION ${CMAKE_BINARY_DIR}/scripts)
 
-    find_program(BASH bash)
+find_program(BASH bash)
 
-    exec_program(${BASH} ${CMAKE_BINARY_DIR}/scripts ARGS "build.sh" RETURN_VALUE PACKAGE_NOT_BUILT)
+exec_program(${BASH} ${CMAKE_BINARY_DIR}/scripts ARGS "build.sh" RETURN_VALUE PACKAGE_NOT_BUILT)
 
-    if(PACKAGE_NOT_BUILT)
-        message(FATAL_ERROR "Couldn't build package")
-    endif()
+if(PACKAGE_NOT_BUILT)
+    message(FATAL_ERROR "Couldn't build package")
 endif()
 
 
