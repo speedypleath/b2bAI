@@ -51,7 +51,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS YES)
 
 # Company settings
 set_directory_properties(PROPERTIES JUCE_COMPANY_COPYRIGHT "GNU GENERAL PUBLIC LICENSE Version 3")
-set_directory_properties(PROPERTIES JUCE_COMPANY_NAME "brahman")
+set_directory_properties(PROPERTIES JUCE_COMPANY_NAME "Brahman")
 set_directory_properties(PROPERTIES JUCE_COMPANY_WEBSITE "https://github.com/speedypleath/b2bAI-VST")
 set_directory_properties(PROPERTIES JUCE_COMPANY_EMAIL "gheorgheandrei13@gmail.com")
 

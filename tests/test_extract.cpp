@@ -54,8 +54,7 @@ void text_embed_note() {
 }
 
 
-
-test_suite* init_unit_test_suite( int /*argc*/, char* /*argv*/[] )
+__attribute__((unused)) test_suite* init_unit_test_suite( int /*argc*/, char* /*argv*/[] )
 {
     framework::master_test_suite().
         add(BOOST_TEST_CASE_NAME(&test_extract_note, "extract note"));

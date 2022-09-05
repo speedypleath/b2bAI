@@ -49,7 +49,7 @@ void test_import_module_and_call_function() {
     }
 }
 
-test_suite* init_unit_test_suite( int /*argc*/, char* /*argv*/[] )
+__attribute__((unused)) test_suite* init_unit_test_suite( int /*argc*/, char* /*argv*/[] )
 {
     framework::master_test_suite().
         add(BOOST_TEST_CASE_NAME(&test_hello_world, "hello world"));
