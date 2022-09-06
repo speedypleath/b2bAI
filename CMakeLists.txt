@@ -6,17 +6,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)  # optional, ensure standard is supported
 set(CMAKE_CXX_EXTENSIONS OFF)  # optional, keep compiler extensions off
 enable_testing()
 
-# Find python
-set(Python3_ROOT_DIR /opt/homebrew/Cellar/python@3.10/3.10.6_1)
-set(Python3_ADDITIONAL_VERSIONS 3.10.6)
-set(Python3_FIND_FRAMEWORK "FIRST")
-find_package (Python3 COMPONENTS Interpreter Development)
-
-message(STATUS "Python3: " ${Python3_INCLUDE_DIRS})
-
-
+if(WIN32)
+    set(BOOST_ROOT "C:\\Boost")
+endif()
 # Find boost
-find_package(Boost 1.79.0 REQUIRED COMPONENTS log unit_test_framework filesystem)
+find_package(Boost REQUIRED COMPONENTS filesystem log unit_test_framework)
 add_definitions(${Boost_DEFINITIONS})
 
 message(STATUS "Boost: " ${Boost_INCLUDE_DIR})
@@ -27,15 +21,22 @@ add_subdirectory(midi_generator)
 
 
 # Build python package
-file(COPY midi_generator DESTINATION ${CMAKE_BINARY_DIR} PATTERN ".github .idea dist build" EXCLUDE)
-file(COPY scripts/build.sh DESTINATION ${CMAKE_BINARY_DIR}/scripts)
+file(COPY midi_generator DESTINATION ${CMAKE_BINARY_DIR} PATTERN ".github .idea dist build .vs" EXCLUDE)
+if(NOT EXISTS ${CMAKE_BINARY_DIR}/midi_generator)
+    if(WIN32)
+        file(COPY scripts/build.bat DESTINATION ${CMAKE_BINARY_DIR}/scripts)
+        find_program(CMD powershell)
 
-find_program(BASH bash)
+        exec_program(${CMD} ARGS "scripts/build.bat" RETURN_VALUE PACKAGE_NOT_BUILT)
+    else()
+        file(COPY scripts/build.sh DESTINATION ${CMAKE_BINARY_DIR}/scripts)
+        find_program(BASH bash)
 
-exec_program(${BASH} ${CMAKE_BINARY_DIR}/scripts ARGS "build.sh" RETURN_VALUE PACKAGE_NOT_BUILT)
-
+        exec_program(${BASH} ${CMAKE_BINARY_DIR}/scripts ARGS "build.sh" RETURN_VALUE PACKAGE_NOT_BUILT)
+    endif()
+endif()
 if(PACKAGE_NOT_BUILT)
-    message(FATAL_ERROR "Couldn't build package")
+    message(STATUS "Couldn't build package")
 endif()
 
 
