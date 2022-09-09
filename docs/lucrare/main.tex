@@ -1,0 +1,95 @@
+\documentclass[12pt]{article}
+
+\usepackage[
+colorlinks = true, 
+linkcolor = blue, 
+urlcolor = blue, 
+citecolor = blue
+]{hyperref}
+
+\usepackage[romanian,english]{babel}
+\usepackage{indentfirst}
+\usepackage{setspace}
+\usepackage{enumitem}
+\usepackage{times}\usepackage{setspace} \doublespacing
+\usepackage{float}
+\usepackage{fontspec}
+\usepackage{lilyglyphs}
+\usepackage{listings}
+\usepackage{minted} 
+\usepackage{mdframed}
+\usepackage{sourcecodepro}
+\usepackage[reqno]{amsmath}
+\usepackage{csquotes, multirow, graphicx, makecell}
+\usepackage[a4paper, total={6in, 8in}]{geometry}
+
+\usepackage[
+backend=biber,
+sorting=ynt,
+]{biblatex}
+
+
+\graphicspath{{./images/}}
+
+\definecolor{bg}{rgb}{0.9,0.9,0.9}
+
+\makeatletter
+\g@addto@macro\appendix{%
+  \cleardoublepage
+  \hypertarget{appendixstart}{}%
+  \addtocontents{toc}{
+    \protect\contentsline{section}{\protect\hyperlink{appendixstart}{Anexe}}{}{}%
+  }%
+}
+\makeatother
+
+\newenvironment{abstractpage}
+  {\cleardoublepage\vspace*{\fill}\thispagestyle{empty}}
+  {\vfill\cleardoublepage}
+\renewenvironment{abstract}[1]
+  {\bigskip\selectlanguage{#1}%
+   \begin{center}\bfseries\abstractname\end{center}}
+  {\par\bigskip}
+  
+\newcounter{codeno}
+\newcommand{\rtask}[1]{\refstepcounter{codeno}\label{#1}}
+\BeforeBeginEnvironment{minted}{\addtocounter{codeno}{-1}}
+\counterwithin{figure}{section}
+\counterwithin{equation}{section}
+\counterwithin{codeno}{section}
+
+\addbibresource{bibliography.bib} %Imports bibliography file
+
+\title{Generare MIDI folosind algoritmi genetici}
+\author{Gheorghe Andrei}
+\date{August 2022}
+
+\makeatletter
+
+\begin{document}
+
+\pagestyle{empty}
+
+\include{title}
+
+\selectlanguage{romanian}
+
+\include{abstract}
+
+\tableofcontents
+
+\clearpage
+\addtocounter{page}{1}
+\pagestyle{plain} 
+
+\include{introducere}
+\include{preliminarii}
+\include{arhitectura}
+\include{plugin}
+\include{midi_generator}
+\include{concluzie}
+
+\printbibliography
+
+\include{anexe}
+\end{document}

@@ -1,0 +1,487 @@
+\appendix
+\section{Header files}
+
+\begin{minted}[fontsize=\footnotesize, linenos=true, bgcolor=bg, frame=lines, label=PluginProcessor.h, breaklines=true, escapeinside=@@, baselinestretch=1]{c++}
+@\rtask{B2bAIAudioProcessor}@
+{
+public:
+    B2bAIAudioProcessor();
+    ~B2bAIAudioProcessor() override;
+
+    void prepareToPlay (double sampleRate, int samplesPerBlock) override;
+    void releaseResources() override;
+
+#ifndef JucePlugin_PreferredChannelConfigurations
+    bool isBusesLayoutSupported (const 
+            AudioProcessor::BusesLayout& layouts) 
+            const override;
+#endif
+    void processBlock (AudioBuffer<float>&, MidiBuffer&) override;
+    void saveMidiFile();
+    void loadMidiFile(const File& file);
+    void loadDirectory(const File& file);
+    void updateListBox(const String& text);
+    double getTailLengthSeconds() const override;
+
+private:
+    MidiFileListBox *midiFileListBox;
+    MidiSequence *midiSequence;
+    File midiFilesDir;
+    AudioProcessorValueTreeState treeState;
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (B2bAIAudioProcessor)
+    File getFile(int index);
+    void initialiseBuilder(foleys::MagicGUIBuilder &builder) override;
+};
+\end{minted}
+
+\begin{minted}[fontsize=\footnotesize, linenos=true, bgcolor=bg, frame=lines, label=PianoRollComponent.h, breaklines=true, escapeinside=@@, baselinestretch=1]{c++}
+@\rtask{PianoRollComponent}@
+class PianoRollComponent: public Component {
+private:
+    std::unique_ptr<KeyboardComponent> keyboardComponent;
+    std::unique_ptr<GridComponent> gridComponent;
+    void timerCallback() override;
+public:
+    enum ColourIds {
+        noteColour = 0x00FF00
+    };
+
+    PianoRollComponent(MidiKeyboardState& state, 
+            KeyboardComponent::Orientation orientation);
+    void paint (juce::Graphics&) override;
+    void resized() override;
+    void mouseWheelMove(const MouseEvent &event, 
+    const MouseWheelDetails &wheel) override;
+    void setMidiSequence(MidiSequence *sequence);
+};
+
+\end{minted}
+
+\begin{minted}[fontsize=\footnotesize, linenos=true, bgcolor=bg, frame=lines, label=MidiFileListBox.h, breaklines=true, escapeinside=@@, baselinestretch=1]{c++}
+@\rtask{MidiFileListBox}@
+class MidiFileListBox: public ListBoxModel,
+                       public Label::Listener,
+                       public ChangeBroadcaster,
+                       public ChangeListener {
+private:
+    File midiFilesDir;
+    Array<File> midiFiles;
+    foleys::SharedApplicationSettings settings;
+    String searchText;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MidiFileListBox)
+public:
+    MidiFileListBox();
+    ~MidiFileListBox() override;
+
+    void listBoxItemClicked (int rowNumber, const juce::MouseEvent& event) override;
+    void listBoxItemDoubleClicked(int row, const juce::MouseEvent &) override;
+    void paintListBoxItem (int rowNumber, juce::Graphics &g, int width, int height, bool rowIsSelected) override;
+
+    void labelTextChanged(juce::Label *labelThatHasChanged) override;
+    int getNumRows() override;
+    void changeListenerCallback (juce::ChangeBroadcaster*) override;
+    std::function<void(File file)> onSelectionChanged;
+    std::function<void(File file)> onDoubleClick;
+    std::function<void(String text)> update;
+};
+
+\end{minted}
+
+
+\begin{minted}[fontsize=\footnotesize, linenos=true, bgcolor=bg, frame=lines, label=SearchBar.h, breaklines=true, escapeinside=@@, baselinestretch=1]{c++}
+@\rtask{SearchBar}@
+class SearchBar : public foleys::GuiItem
+{
+private:
+    juce::Label label;
+    Label::Listener *listener = nullptr;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SearchBar)
+public:
+    FOLEYS_DECLARE_GUI_FACTORY (SearchBar)
+
+    static const juce::Identifier  pText;
+    static const juce::Identifier  pJustification;
+    static const juce::Identifier  pFontSize;
+    static const juce::Identifier  pDestination;
+
+    SearchBar (foleys::MagicGUIBuilder& builder, const juce::ValueTree& node);
+    void update() override;
+    std::vector<foleys::SettableProperty> getSettableProperties() const override;
+    juce::Component* getWrappedComponent() override;
+};
+\end{minted}
+
+\begin{minted}[fontsize=\footnotesize, linenos=true, bgcolor=bg, frame=lines, label=NoteRectangle.h, breaklines=true, escapeinside=@@, baselinestretch=1]{c++}
+@\rtask{NoteRectangle}@
+class NoteRectangle: public Rectangle<int> {
+public:
+    NoteRectangle(int x=0, int y=0, int width=0, int height=0, int p=0);
+    NoteRectangle(int p, int v, double s, double e);
+    [[nodiscard]] int getPitch() const;
+    void setPitch(int pitch);
+    friend std::ostream &operator<<(std::ostream &os, const NoteRectangle &note);
+    [[nodiscard]] int getVelocity() const;
+    void setVelocity(int velocity);
+    bool operator==(const NoteRectangle &rhs) const;
+    bool operator!=(const NoteRectangle &rhs) const;
+    [[nodiscard]] double getStart() const;
+    void setStart(double start);
+    [[nodiscard]] double getEnd() const;
+    void setEnd(double end);
+private:
+    Note note;
+};
+\end{minted}
+
+\begin{minted}[fontsize=\footnotesize, linenos=true, bgcolor=bg, frame=lines, label=GridComponent.h, escapeinside=@@, breaklines=true, baselinestretch=1]{c++}
+@\rtask{GridComponent}@
+class GridComponent: public Component {
+private:
+    OwnedArray<Range<int>> noteLineRanges;
+    OwnedArray<Range<int>> noteRowRanges;
+    MidiSequence *notes = nullptr;
+    NoteRectangle pressed, new_position;
+    NoteRectangle find_note_rect(Point<int> position);
+    int normalise(double w, double wMax);
+public:
+    GridComponent();
+
+    void updateNoteLineRanges(int firstKeyStartPosition);
+
+    void paint(Graphics &g) override;
+    void mouseMove(const MouseEvent &event) override;
+    void mouseDown(const MouseEvent &event) override;
+    void mouseDrag(const MouseEvent &event) override;
+    void mouseDoubleClick(const MouseEvent &event) override;
+    void mouseUp(const MouseEvent &event) override;
+    void setMidiSequence(MidiSequence *sequence);
+};
+\end{minted}
+
+\begin{minted}[fontsize=\footnotesize, linenos=true, bgcolor=bg, frame=lines, label=PianoRoll.h, escapeinside=@@, breaklines=true, baselinestretch=1]{c++}
+@\rtask{PianoRoll}@
+class PianoRoll: public foleys::GuiItem {
+private:
+    PianoRollComponent pianoRoll;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PianoRoll)
+public:
+    FOLEYS_DECLARE_GUI_FACTORY(PianoRoll)
+
+    static const juce::Identifier  pSource;
+    static const juce::Identifier  pNoteColor;
+
+    PianoRoll(foleys::MagicGUIBuilder& builder, const juce::ValueTree& node);
+
+    void update() override;
+
+    [[nodiscard]] std::vector<foleys::SettableProperty> getSettableProperties() const override;
+
+    juce::Component* getWrappedComponent() override;
+};
+\end{minted}
+
+\newpage
+
+\section{Referințe cod} 
+\begin{minted}[fontsize=\footnotesize, linenos=true, bgcolor=bg, frame=lines, label=Arbore XML, escapeinside=@@, breaklines=true, baselinestretch=1]{xml}
+@\rtask{XML}@
+<View background-color="FF4E505F" height="10%" display="flexbox" margin="0"
+      padding="0" flex-align-self="stretch" flex-direction="column"
+      radius="0" border="0" caption="Search" caption-size="0">
+  <SearchBar font-size="16.0" justification="top-left" label-background="212c31"
+             text="" max-height="25" height="" flex-align-self="stretch" margin="0"
+             padding="1" border="0" label-outline="FF4E505F" background-color="FF4E505F"
+             radius="0" caption="SearchBox" caption-size="0" pos-x="0%" pos-y="0%"
+             pos-width="100%" pos-height="8.25083%" destination="filetree"/>
+  <ListBox list-box-model="filetree" pos-x="0" background-color="FF4E505F"
+           pos-y="0%" pos-width="100%" pos-height="10.7527%" padding="2"
+           caption="FileTree" caption-size="0"/>
+</View>
+\end{minted}
+
+\begin{minted}[fontsize=\footnotesize, linenos=true, bgcolor=bg, frame=lines, label=Paint grid, escapeinside=@@, breaklines=true, baselinestretch=1]{c++}
+@\rtask{Update}@
+void GridComponent::paint(Graphics& g)
+{
+    int height = getHeight();
+    int width = getWidth();
+    // Draw the background
+    for (int i = 0; i < 8; i += 2) {
+        auto shadow = DropShadow(Colours::black, 1, Point<int>(0, 0));
+        auto rect = Rectangle<int>(noteRowRanges[i * 4]->getStart(),
+                                   0,
+                                   noteRowRanges[(i + 1) * 4]->getStart() - noteRowRanges[i * 4]->getStart(),
+                                   height);
+        shadow.drawForRectangle(g, rect);
+    }
+    g.setColour(Colours::white);
+
+    // Draw note lines
+    for (int i = 0; i < noteLineRanges.size(); i++) {
+        auto rect = Rectangle<int>(0, noteLineRanges[i]->getStart(), width, noteLineRanges[i]->getLength());
+        if (rect.getBottom() < 0 || rect.getY() >= height)
+            continue;
+        g.drawRect(rect, 1);
+        if (!MidiMessage::isMidiNoteBlack(i))
+            continue;
+        g.fillRect(rect);
+    }
+
+    g.setColour(Colours::lightgrey);
+    // Draw beats lines
+    for (auto noteRowRange : noteRowRanges) {
+        g.fillRect(static_cast<int>(noteRowRange->getStart() - 1), 0, 1, height);
+    }
+
+    // draw notes
+    g.setColour(Colours::green);
+    if(notes)
+        for (const auto& note : *notes) {
+            if(pressed == note) {
+                g.fillRect(new_position.expanded(1));
+                continue;
+            }
+
+            g.fillRect(note);
+        }
+}
+\end{minted}
+
+\begin{minted}[fontsize=\footnotesize, linenos=true, bgcolor=bg, frame=lines, label=Pybind11, escapeinside=@@, breaklines=true, baselinestretch=1]{c++}
+@\rtask{Boost}@
+std::list<mg::Note> mg::generate() {
+    try {
+        pybind11::module_ commands = pybind11::module_::import("midi_generator.commands");
+        py::object result = commands.attr("generate")();
+        std::list<mg::Note> notes;
+        for(const auto& obj: result)
+            notes.emplace_back(
+                    obj.attr("pitch").cast<int>(),
+                    obj.attr("velocity").cast<int>(),
+                    obj.attr("start").cast<double>(),
+                    obj.attr("end").cast<double>()
+                    );
+
+        return notes;
+    } catch (py::error_already_set &error) {
+        error.discard_as_unraisable(__func__ );
+        return {};
+    }
+}
+\end{minted}
+
+\begin{minted}[fontsize=\footnotesize, linenos=true, bgcolor=bg, frame=lines, label=CMake, escapeinside=@@, breaklines=true, baselinestretch=1]{CMake}
+@\rtask{CMake}@
+cmake_minimum_required(VERSION 3.23)
+project(b2bAI VERSION 1.0)
+
+# Find python
+set(Python3_ADDITIONAL_VERSIONS 3.10.6)
+find_package (Python3 COMPONENTS Interpreter Development)
+# Find boost
+find_package(Boost 1.79.0 REQUIRED COMPONENTS log python310 unit_test_framework filesystem)
+add_definitions(${Boost_DEFINITIONS})
+# Build shared library
+option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+add_subdirectory(lib/midi_generator)
+
+# Build python package
+if(NOT IS_DIRECTORY ${CMAKE_BINARY_DIR}/midi_generator)
+    file(COPY midi_generator DESTINATION ${CMAKE_BINARY_DIR} PATTERN ".github" EXCLUDE)
+    file(COPY scripts/build.sh DESTINATION ${CMAKE_BINARY_DIR}/scripts)
+    file(COPY scripts/create_note.py DESTINATION ${CMAKE_BINARY_DIR}/scripts)
+    find_program(BASH bash)
+    exec_program(${BASH} ${CMAKE_BINARY_DIR}/scripts ARGS "build.sh" RETURN_VALUE PACKAGE_NOT_BUILT)
+    if(PACKAGE_NOT_BUILT)
+        message(FATAL_ERROR "Couldn't build package")
+    endif()
+endif()
+
+#JUCE
+add_subdirectory(lib/JUCE EXCLUDE_FROM_ALL)
+juce_add_module(lib/foleys_gui_magic)
+set_property(GLOBAL PROPERTY JUCE_COPY_PLUGIN_AFTER_BUILD TRUE)
+option(JUCE_ENABLE_MODULE_SOURCE_GROUPS "Enable Module Source Groups" ON)
+set_property(GLOBAL PROPERTY USE_FOLDERS YES)
+# Company settings
+set_directory_properties(PROPERTIES JUCE_COMPANY_COPYRIGHT "GNU GENERAL PUBLIC LICENSE Version 3")
+set_directory_properties(PROPERTIES JUCE_COMPANY_NAME "brahman")
+set_directory_properties(PROPERTIES JUCE_COMPANY_WEBSITE "https://github.com/speedypleath/b2bAI-VST")
+set_directory_properties(PROPERTIES JUCE_COMPANY_EMAIL "gheorgheandrei13@gmail.com")
+
+# Plugin
+add_subdirectory(vst)
+# Tests
+enable_testing()
+add_subdirectory(tests)
+\end{minted}
+
+\begin{minted}[fontsize=\footnotesize, linenos=true, bgcolor=bg, frame=lines, label=Testare, escapeinside=@@, breaklines=true, baselinestretch=1]{c++}
+@\rtask{Testare}@
+void test_extract_note() {
+    pybind11::scoped_interpreter guard{};
+    auto locals = py::dict();
+    py::exec(R"(
+        from note import Note
+        test_note = Note(60, 100, 0, 2)
+    )", py::globals(), locals);
+    try {
+        auto src = locals["test_note"];
+        midi_generator::Note note;
+        note.pitch =  src.attr("pitch").cast<int>();
+        note.velocity = src.attr("velocity").cast<int>();
+        note.start = src.attr("start").cast<double>();
+        note.end = src.attr("end").cast<double>();
+        BOOST_TEST(note.pitch == 60);
+        BOOST_TEST(note.velocity == 100);
+        BOOST_TEST(note.start == 0.0f);
+        BOOST_TEST(note.end == 2.0f);
+    } catch (py::error_already_set &error) {
+        BOOST_TEST(false);
+    }
+}
+
+void text_embed_note() {
+    pybind11::scoped_interpreter guard{};
+
+    py::module_ module = py::module_::import("note");
+
+    auto constructor = module.attr("Note")(60, 100, 0.0f, 2.0f);
+    auto locals = py::dict();
+
+    py::exec(R"(
+        from note import Note
+
+        def check_note(note: Note):
+            if note.pitch == 60 and note.velocity == 100:
+                return True
+            return False
+    )", py::globals(), locals);
+    auto check = locals["check_note"];
+    auto src = check(constructor);
+    BOOST_TEST(src.cast<bool>());
+}
+
+test_suite* init_unit_test_suite( int /*argc*/, char* /*argv*/[] )
+{
+    framework::master_test_suite().
+        add(BOOST_TEST_CASE_NAME(&test_extract_note, "extract note"));
+    framework::master_test_suite().
+        add(BOOST_TEST_CASE_NAME(&text_embed_note, "embed note"));
+    return nullptr;
+}
+\end{minted}
+
+\begin{minted}[fontsize=\footnotesize, linenos=true, bgcolor=bg, frame=lines, label=Mutație, escapeinside=@@, breaklines=true, baselinestretch=1]{python}
+@\rtask{mutație}@
+def mutation(config: Configuration, genes):
+    for gene in genes:
+        change = random.random()
+        if change < config.pitch_change_rate:
+            change_2 = random.random()
+            if change_2 > config.consonance_rate:
+                gene.pitch = random.choice(config.scale.notes[30:40])
+            else:
+                gene.pitch = random.choice(list(set(POSSIBLE_NOTES) - set(config.scale.notes))[30:40])
+
+        change = random.random()
+        if change < config.length_change_rate:
+            gene.remaining_ticks = 0
+    return genes,
+\end{minted}
+
+\begin{minted}[fontsize=\footnotesize, linenos=true, bgcolor=bg, frame=lines, label=Generator, escapeinside=@@, breaklines=true, baselinestretch=1]{python}
+@\rtask{generator}@
+def generator(config: Configuration=Configuration()):
+    prev_gene: Gene | None = None
+
+    def create_random_gene() -> Gene:
+        nonlocal prev_gene
+        if prev_gene is not None and prev_gene.remaining_ticks > 1:
+            prev_gene = Gene(prev_gene.pitch, prev_gene.velocity, prev_gene.remaining_ticks - 1)
+            return prev_gene
+
+        tick = min(config.rate)
+        duration = int(random.choice(config.rate) / tick)
+        key = random.choice(list(config.scale.notes)[30:40])
+        velocity = random.randint(80, 100)
+        prev_gene = Gene(key, velocity, duration)
+        return prev_gene
+
+    return create_random_gene
+\end{minted}
+
+\begin{minted}[fontsize=\footnotesize, linenos=true, bgcolor=bg, frame=lines, label=Wrapper, escapeinside=@@, breaklines=true, baselinestretch=1]{python}
+@\rtask{wrapper}@
+def check_remaining_ticks():
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            offspring = func(*args, **kwargs)
+            for genes in offspring:
+                for i, gene in enumerate(genes):
+                    if gene.remaining_ticks == 0:
+                        continue
+                    gene.remaining_ticks = len(list(
+                        takewhile(lambda x: x.pitch == gene.pitch, genes[i:])))
+            return offspring
+        return wrapper
+    return decorator
+\end{minted}
+
+\begin{minted}[fontsize=\footnotesize, linenos=true, bgcolor=bg, frame=lines, label=Off-Beatness, escapeinside=@@, breaklines=true, baselinestretch=1]{python}
+@\rtask{offbeatness}@
+def off_beatness(notes: list[Note]) -> float:
+    b = [x for x in filter(lambda i: len(notes) % i == 0, range(1, len(notes) + 1))]
+    weights = [0 if len(list(filter(lambda i: x % i == 0, b))) else 1 for x in notes]
+    return sum(weights) / len(notes)
+\end{minted}
+
+\begin{minted}[fontsize=\footnotesize, linenos=true, bgcolor=bg, frame=lines, label=WNBD, escapeinside=@@, breaklines=true, baselinestretch=1]{python}
+@\rtask{WNBD}@
+def weighted_note_to_beat(notes: list[Note]) -> float:
+    for note in notes:
+        left = floor(note.start)
+        right = left + 1
+        distance = min(note.start - left, abs(note.start - right))
+
+        if distance == 0:
+            continue
+        if right < note.end < right + 1:
+            total += 2 / distance
+        else:
+            total += 1 / distance
+
+    return total / len(notes)
+\end{minted}
+
+\begin{minted}[fontsize=\footnotesize, linenos=true, bgcolor=bg, frame=lines, label=LZ77, escapeinside=@@, breaklines=true, baselinestretch=1]{python}
+@\rtask{lz77}@
+def encode_lz77(string: list, window_size=100):
+    encoded = string[: window_size + 1]
+    i = window_size
+    while i < len(string) - window_size:
+        input_buffer = string[i: i + window_size + 1]
+        window = string[i - window_size: i + window_size + 1]
+
+        substring = max([reduce(lambda x, y: x + y,
+                                map(lambda x: x[0],
+                                    takewhile(lambda x: x[0] == x[1],
+                                              zip_longest(string[i + j: i + window_size], input_buffer)
+                                              )
+                                    )
+                                , '') for j in range(-window_size, 0)]
+                        , key=len)
+
+        if substring == '':
+            i += 1
+            encoded += f'0,0${string[i]}'
+        else:
+            i += len(substring)
+            offset = window.find(substring)
+            encoded += f'{str(offset)},{str(len(substring))}${string[i]}'
+
+    return encoded
+\end{minted}

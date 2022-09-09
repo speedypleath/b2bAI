@@ -1,0 +1,36 @@
+\documentclass[11pt]{article}
+
+% Language setting
+% Replace `english' with e.g. `spanish' to change the document language
+\usepackage[romanian]{babel}
+% Useful packages
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+\title{Generare MIDI folosind algoritmi genetici: rezumat}
+\author{Gheorghe Andrei-Șerban}
+
+\begin{document}
+\maketitle
+
+\section{Introducere}
+Aplicația dezvoltată în cadrul lucrării de licență se incadrează in categoria de arta generativă și incorporează compoziție algoritmică în cadrul procesului de creație muzicală. Acest lucru este realizat prin implementarea a patru funcționăți: "generate", "mutate", "continue" și "combine", prezentate în detaliu în Capitolul \ref{module}. Aplicația este open source și poate fi găsită pe \hyperlink{https://github.com/speedypleath/b2bAI}{Github}. Componentele aplicației, cât și librăriile externe sunt construite și "împachetate" folosind CMake. 
+
+\section{Arhitectură}
+Aplicația este compusă dintr-un modul de python, un plugin audio, și o librărie care ”leagă” primele două componente. Pe lângă acestea, proiectul folosește și patru librării externe: pybind11, JUCE, Boost și foleys\_gui\_magic. \par
+Librăria comună folosește pybind11 pentru a permite interoperabilitate între plugin-ul scris în C++ și modulul de python. Astfel, în aceasta sunt definite două clase, utilizate atât în implementarea modulului. Astfel, aceasta definește două clase, utilizate atât în implementarea modulului, cât și a plugin-ului audio, precum și un API care abstractizează apelarea funcțiilor prin interpretatorul încorporat de pybind11.
+
+\section{Python module}
+Modulul de python implementează algoritmii genetici folosiți în cadrul aplica-ției. Acest lucru este realizat folosind framework-ul deap. Acesta conține două seturi de operatori genetici, unul pentru funcția "generate", și unul pentru funcțiile "continue" și "combine". \par 
+Primul algoritm este un algoritm genetic multiobiectiv și folosește operatorul de selecție NSGA-II. Algoritmul evaluează fitness-ul în funcție de nivelul de sincopare, densitatea notelor, și rația notelor consonante. Nivelul de sincopare poate fi calculat folosind măsura WNBD sau Off-beatness. \par
+Pentru al doilea algoritm, fitness-ul unui individ este calculat folosind funcția NCD (Normalized Compression Distance). Pentru folosirea acesteia, aplicația implementează trei algoritmi de compresie: LZ77, LZ78, și LZW. \par
+Ambii algoritmi folosesc aceeași codificare a genelor și aceiași operatori de mutație și de recombinare. Secvențele muzicale sunt codificate sub forma unei liste formate din frecvența, velocitatea și durata rămăsa din nota redată în momentul fiecărui puls. Operatorul de recombinare folosit este încrucișarea cu un singur punct, iar mutația poate să afecteze frecvența, velocitatea, sau durata unei note.
+\label{module}
+
+\section{Audio plugin}
+Plugin-ul audio este scris folosind framework-ul JUCE și librăriile  Boost și foleys\_gui\_magic. Acesta este distribuit atât sub forma unei aplicații de sine stătătoare, cât și în format VST și AU, pentru a putea fi deschis într-un DAW. Interfața grafică a acestuia conține 3 elemente principale: un piano roll, un filetree, și un panou de configurare. \par 
+Piano roll-ul este folosit pentru a vizualiza și modifica secvențele muzicale. O secvență este formată dintr-o listă de note. Notele sunt reprezentate într-o clasă care extinde forma de dreptunghi a framework-ului JUCE și încapsulează o notă definită în librăria comună. \par
+Filetree-ul poate parcurge directoarele sistemului intern de fișiere, poate salva fișiere în format MIDI, și poate încărca secvențe în piano roll. Pentru a salva fișiere este folosită funcția "write\_file" din cadrul modului de python. Pentru a încărca fișiere, aplicația folosește funcționalitățiile din librăria JUCE pentru a extrage și transforma mesajele de tipul "Note on" și "Note off" din fișier. \par
+Panoul de configurare conține 4 tab-uri, câte unul pentru fiecare dintre funcționalitățiile expuse de aplicație, și un buton de "run", comun tuturor celor 4 ferestre. Pentru funcția "generate" parametrii configurabili sunt gama, tempo-ul, durata, măsură, nivelul de sincopare, densitatea notelor, și rația de note consonante a secvenței. Funcția "mutate" poate modifica durata, frecvența, velocitatea și consonanța notelor. Pentru funcțiile "continue" și "combine" se poate alege algoritmul de compresie folosit. În plus, pentru funcția "continue" se pot selecta secvențele primite ca input.
+\end{document}

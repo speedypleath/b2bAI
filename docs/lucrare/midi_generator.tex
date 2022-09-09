@@ -1,0 +1,57 @@
+       
+\section{Modulul midi-generator}
+    \noindent Modulul \textit{midi\hyphen generator} este un modul scris în Python care folosește librăria deap \cite{deap} pentru a implementa diverse funcționalități folosind algoritmi genetici. Acesta conține atât o interfață de linie de comandă pentru a putea fi folosit de sine stătător, cât și un API care prezintă funcționalitățiile implementate. Modulul este construit, testat și distribuit automat prin github actions la fiecare acțiune de push sau merge pe branch-ul principal de GitHub.
+        
+    \subsection{Algoritmul genetic}
+        \noindent Algoritmul genetic este implementat folosind deap, un framework care oferă o colecție de unelte compusă din modulul \textit{creator} și modulul \textit{toolbox}. Primul modul permite creerea de clase noi care pot fi folosite în cadrul genotipului, iar al doilea reprezintă un container pentru operatorii genetici. \par
+        \subsubsection{Codificare}
+            \noindent Pentru a rezolva problema codificării unei secvențe de note muzicale am definit întâi clasa Gene:
+
+            \begin{minted}[fontsize=\footnotesize, baselinestretch=1]{python}
+@dataclass
+class Gene:
+    pitch: int
+    velocity: int
+    remaining_ticks: int
+            \end{minted}
+
+            \noindent Astfel, genele sunt reprezentate de pulsurile metrului folosit și conțin frecvența, velocitatea și numărul de pulsuri rămase din nota redată la momentul respectiv. Pentru a putea înregistrata genotipul în toolbox am creat un generator (Anexa \ref{generator}) de note continue în timp, de lungime variată. Acesta este implementat folosind un closure care reține valoarea notei anterioare. Funcția de generare din cadrul closure-ului verifică dacă pulsul curent are loc în timpul redării notei anterioare, caz în care returnează nota precedentă, din care este scăzut un tick. În caz contrar, generatorul returnează o notă aleatoare. Așadar, un individ reprezintă o listă formată din rezultatele returnate de generator. Înregistrarea notei în toolbox se realizează în felul următor:
+            
+            \begin{minted}[fontsize=\footnotesize, baselinestretch=1]{python}
+creator.create("Individual", list, fitness=creator.Fitness)
+toolbox.register("individual", tools.initRepeat, 
+    -> creator.Individual, toolbox.generator, n=NO_TICKS)
+toolbox.register("population", tools.initRepeat, list, 
+    -> toolbox.generator)
+            \end{minted}
+            
+        \subsubsection{Mutație} \par
+            \noindent Mutația (Anexa \ref{mutație}) poate afecta frecvența, velocitatea sau durata unei note. În cazul în care mutația modifică durata unei note, aceasta poate afecta mai multe gene simultan (valabil și în cadrul crossover-ului). Pentru a rezolva această problemă am definit un decorator (Anexa \ref{wrapper}) care parcurge pulsurile cromozomului rezultat în urma mutației (sau a crossover-ului) și setează valoarea numărului de pulsuri rămase din notă ca fiind egală cu numărul de gene imediat consecutive care au valoare frecvenței egală cu cea a pulsului curent. Modul prin care sunt decorate cele 2 funcții este următorul: 
+            
+                    \begin{minted}[fontsize=\footnotesize, baselinestretch=1]{python}
+decorator = check_remaining_ticks()
+toolbox.decorate("mate", decorator)
+toolbox.decorate("mutate", decorator)
+                    \end{minted}
+                    
+        \subsubsection{Fitness} \par
+            \noindent Funcția de fitness este calculată în funcție de nivelul de sincopare, densitatea notelor și rația notelor consonante. Pentru calcularea nivelului de sincopare, se poate alege între măsura WNBD (Capitolul \ref{wnbd}, implementare Anexa \ref{WNBD}) și off-beatness (Capitolul \ref{ob}, implementare Anexa \ref{offbeatness}). Densitatea și rația notelor consonante sunt calculate prin raportul dintre numărul de pulsuri în care sunt redate note, respectiv numărul de pulsuri în care sunt redata note din gama selectată și numărul total de pulsuri. \par
+            Pentru funcțiile continue și combine funcția de fitness este calculată folosind distanța NCD (Normalized
+Compression Distance) care se calculează prin formula:
+            \begin{equation}
+                NCD(x, y) = \frac{ max(C(xy) - C(x), C(yx) - C(y)) }{ max( C(x), C(y) ) }
+            \end{equation}
+            \noindent Unde $C(x)$ reprezintă lungimea rezultatului compresiei lui $x$ folosind orice algoritm aproximativ pentru complexitatea Kolmogorov \cite{kolmogovorv}. Astfel, pentru un set de secvențe $S$ și un individ $x$ funcția de fitness este dată de formula: 
+            \begin{equation}
+                f(x) = \frac{1}{ \sum\limits_{s \in S}{NCD(x, s)} }
+            \end{equation}
+            \noindent În aplicație sunt implementați 3 algoritmi de compresie, anume LZ77 \cite{lz77}, LZ78 \cite{lz78} și LZW \cite{lzw}. Implementarea algoritmului LZ77 se poate găsi în Anexa \ref{lz77}.
+    \subsection{API}
+        \noindent Modulul expune funcționalitățiile implementate sub forma unui API format din următoarele endpoints: \par
+            \begin{itemize}
+                \item \textbf{mutate} - primește ca argument o configurație; returnează o secvență de note generate folosind algoritmul genetic, în funcție de configurația primită 
+                \item \textbf{continue} - primește ca argumente o secvență de note și o configurație; returnează rezultatul aplicării operatorului de mutație pe secvența de note, în funcție de configurația primită
+                \item \textbf{continue} - primește ca argumente o secvență de note și o configurație; returnează o secvență de note generate folosind algoritmul genetic cu funcția de fitness kolmogorov, în funcție de configurația și secvențele primite
+                \item \textbf{combine} - primește ca argumente o listă de secvențe de note și o configurație; returnează o secvență de note generate folosind algoritmul genetic cu funcția de fitness kolmogorov, în funcție de configurația și secvențele primite
+                \item \textbf{write\_file} - primește ca argumente o secvență de note și calea unui fișier; scrie în calea primită un fișier MIDI format din secvența de note transmisă ca argument
+            \end{itemize}

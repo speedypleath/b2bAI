@@ -16,13 +16,11 @@ add_definitions(${Boost_DEFINITIONS})
 message(STATUS "Boost: " ${Boost_INCLUDE_DIR})
 
 
-# Build shared library
-add_subdirectory(midi_generator)
-
-
 # Build python package
-file(COPY midi_generator DESTINATION ${CMAKE_BINARY_DIR} PATTERN ".github .idea dist build .vs" EXCLUDE)
 if(NOT EXISTS ${CMAKE_BINARY_DIR}/midi_generator)
+    # Build shared library
+    add_subdirectory(midi_generator)
+    file(COPY midi_generator DESTINATION ${CMAKE_BINARY_DIR} PATTERN ".github .idea dist build .vs" EXCLUDE)
     if(WIN32)
         file(COPY scripts/build.bat DESTINATION ${CMAKE_BINARY_DIR}/scripts)
         find_program(CMD powershell)
@@ -34,11 +32,10 @@ if(NOT EXISTS ${CMAKE_BINARY_DIR}/midi_generator)
 
         exec_program(${BASH} ${CMAKE_BINARY_DIR}/scripts ARGS "build.sh" RETURN_VALUE PACKAGE_NOT_BUILT)
     endif()
+    if(PACKAGE_NOT_BUILT)
+        message(STATUS "Couldn't build package")
+    endif()
 endif()
-if(PACKAGE_NOT_BUILT)
-    message(STATUS "Couldn't build package")
-endif()
-
 
 #JUCE
 add_subdirectory(lib/JUCE EXCLUDE_FROM_ALL)
