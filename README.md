@@ -1,4 +1,7 @@
-# Dependencies
+# b2bAI
+b2bAI is an audio plugin used to generate MIDI sequences using genetic algorithms. 
+
+## Dependencies
 
 Tested on Debian 11 ARM
 
